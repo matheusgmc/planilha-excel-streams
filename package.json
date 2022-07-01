@@ -1,0 +1,21 @@
+{
+  "name": "google-sheets",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start":"node .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "blessed": "^0.1.81",
+    "dotenv": "^16.0.1",
+    "excel4node": "^1.7.2",
+    "exceljs": "^4.3.0",
+    "google-spreadsheet": "^3.3.0"
+  }
+}
