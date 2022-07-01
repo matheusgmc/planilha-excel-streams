@@ -31,9 +31,9 @@ para os arquivo, se tiver dentro da `pasta raiz` basta apenas informa o nome del
 ##### Iniciar
 Para executar o código basta ir no seu terminal e digitar o comando
 ```bash
-node .
+$ node .
 # ou
-npm start
+$ npm start
 ```
 Lembrando que para executar um comando pelo terminal é necessário esta dentro da pasta do projeto.
 
