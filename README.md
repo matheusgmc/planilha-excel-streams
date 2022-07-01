@@ -1,7 +1,6 @@
 # Planilha Excel
 
-Projeto para obter ceps de um arquivo `.xlsx` converter para endereço completo e adicionar em uma nova coluna na planilha.
-
+Projeto para obter ceps de um arquivo `.xlsx` converter para um endereço completo e adicionar em uma nova coluna na planilha, usando streams para poder processar arquivos com uma grande quantidade linhas divindo em várias chunks o processo.
 
 ### Como usar?
 é preciso no mínimo o `Node.Js 16.15.1 LTS` caso queira baixa só [clique aqui](https://nodejs.org/en/).
