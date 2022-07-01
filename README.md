@@ -20,7 +20,7 @@ $ npm install
 dentro do arquivo `index.js` se encontra a configuração do codigo
 ![Config](/.github/config_planilha.png)
 - `pathfileIn` - Sera o nome do arquivo que deseja ler para obter os dados. (lembra de adicionar a extensão, no caso xlsx)
-- `pathfileOut` - Sera o nome do arquivo que sera gerado no final do processo (lembrando da extensão)
+- `pathfileOut` - O nome do arquivo que sera gerado no final do processo (lembrando da extensão)
 - `delay` - Caso muitos processos comecem a falha, tente ativar o delay para as api’s não bloquearem o acesso. (padrão = false )
 - `delayTime` - Adicione um valor em milissegundos para o delay (padrão= 1 segundo)
 
