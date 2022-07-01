@@ -1,14 +1,13 @@
 {
-  "name": "google-sheets",
+  "name": "planilha-excel-streams",
   "version": "1.0.0",
-  "description": "",
+  "description": "Automação para processar planilhas grandes com muitas linhas.",
   "main": "index.js",
   "scripts": {
-    "start": "node .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ."
   },
   "keywords": [],
-  "author": "",
+  "author": "Matheus Geraldo <matheus.geraldo1@outlook.com>",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.27.2",
