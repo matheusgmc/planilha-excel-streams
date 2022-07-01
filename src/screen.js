@@ -1,13 +1,16 @@
 const blessed = require("blessed");
+const contrib = require("blessed-contrib");
+
 const screen = blessed.screen({
   smartCSR: true,
+  title: "Processando Planilha",
 });
+screen.render()
 
-screen.title = "Planilha grande";
+
 
 const box = blessed.box({
   left: "center",
-  width: "50%",
   height: "50%",
   tags: true,
   border: {
@@ -22,100 +25,115 @@ const box = blessed.box({
 });
 
 const StatusBar = blessed.box({
-  width: "60%",
-  top: "10%",
-  height: 10,
+  height: "20%",
   tags: true,
   style: {
     fg: "white",
+    transparent: true,
   },
 });
 
 const Errors = blessed.box({
-  left: "center",
-  width: "60%",
-  height: 2,
+  width: "50%",
   content: "Falhas: 0",
-  tags: true,
+  valign: "middle",
+  align: "center",
   style: {
     fg: "white",
+    transparent: true,
   },
 });
 
 const Success = blessed.box({
-  left: "center",
-  width: "60%",
-  top: "10%",
-  height: 2,
+  width: "50%",
+  right: 0,
   content: "Sucessos: 0",
   tags: true,
+  valign: "middle",
+  align: "center",
   style: {
     fg: "white",
+    transparent: true,
   },
 });
 
 const SwitchRouter = blessed.box({
-  left: 30,
-  top: "10%",
-  height: 2,
-  content: "SwitchRouter: true",
+  top: "20%",
+  height: "20%",
+  content: "Router: ",
+  valign: "middle",
   tags: true,
   style: {
     fg: "white",
+    transparent: true,
   },
 });
 
-const LineResponse = blessed.box({
-  top: "30%",
-  left: "center",
-  width: "60%",
-  height: 10,
-  content: "Resultado:",
+const Response = blessed.box({
+  top: "35%",
   tags: true,
   style: {
     fg: "white",
+    transparent: true,
+  },
+});
+
+const log = contrib.log({
+  width:"50%",
+  right:0,
+  fg: "green",
+  selectedFg: "green",
+  label: "Logs",
+});
+
+const LineResponse = blessed.box({
+  width:"50%",
+  content: "Endereço:\nCep: ",
+  valign: "middle",
+  tags: true,
+  style: {
+    fg: "white",
+    transparent: true,
   },
 });
 
 screen.key(["escape", "q", "C-c"], function (ch, key) {
   return process.exit(0);
 });
-box.append(StatusBar);
-box.append(LineResponse);
-box.append(SwitchRouter);
 StatusBar.append(Errors);
 StatusBar.append(Success);
+Response.append(log);
+Response.append(LineResponse);
+box.append(StatusBar);
+box.append(SwitchRouter);
+box.append(Response);
 screen.append(box);
-screen.render();
 
 function changeLineResponse(value) {
-  LineResponse.setContent(`Resultado: ${value}`);
+  LineResponse.setContent(`${value}`);
 }
 
 function changeStatusBar(falhas, sucessos) {
-  Errors.setContent(`Falhas: ${falhas}`);
-  Success.setContent(`Sucessos: ${sucessos}`);
+  Errors.setText(`Falhas: ${falhas}`);
+  Success.setText(`Sucessos: ${sucessos}`);
 }
 
 function changeSwitch(value) {
-  SwitchRouter.setContent(value);
+  SwitchRouter.setContent(`Api: ${value} `);
+}
+
+function addLog(value) {
+    log.log(value);
 }
 
 function renderScreen() {
   screen.render();
 }
 
-
-
 module.exports = {
-  screen,
-  StatusBar,
-  LineResponse,
-  Errors,
-  Success,
-  SwitchRouter,
   changeLineResponse,
   changeStatusBar,
   changeSwitch,
   renderScreen,
+  addLog,
 };
