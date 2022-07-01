@@ -38,4 +38,6 @@ module.exports = {
   formaterAddress,
   formaterAddressBackup,
   RetryRequest,
+  RouterUrl: router.getUri(),
+  RouterUrlBackup:routerBackup.getUri()
 };
