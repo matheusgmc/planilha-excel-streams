@@ -1,30 +1,29 @@
 const ExcelNode = require("exceljs");
 const { pipeline, Readable, Writable, Transform } = require("stream");
 const { promisify } = require("util");
+const fs = require("fs");
+
 const pipelineAsync = promisify(pipeline);
 
-const fs = require("fs");
+const {
+  RetryRequest,
+  formaterAddress,
+  formaterAddressBackup,
+  RouterUrl,
+  RouterUrlBackup,
+} = require("./services");
+
+var falhas = 0;
+var sucessos = 0;
+var switchRouter = true;
 
 const {
   renderScreen,
   changeStatusBar,
   changeLineResponse,
   changeSwitch,
+  addLog,
 } = require("./screen");
-var falhas = 0;
-var sucessos = 0;
-var switchRouter = true;
-function changeConsole(address, cep) {
-  if (address == "Não foi encontrado o endereço") {
-    falhas++;
-  } else {
-    sucessos++;
-  }
-  changeStatusBar(falhas, sucessos);
-  changeSwitch(`SwitchRouter: ${switchRouter}`);
-  changeLineResponse(`${address} || ${cep}`);
-  renderScreen();
-}
 
 class Planilha {
   constructor({
@@ -32,6 +31,7 @@ class Planilha {
     pathfileOut = "resultados.xlsx",
     delay = false,
     delayTime = 1000,
+    renderActive = false,
   }) {
     this.file = pathfileIn;
     this.outfile = pathfileOut;
@@ -40,15 +40,38 @@ class Planilha {
     this.worksheet = null;
     this.delay = delay;
     this.delayTime = delayTime;
+    this.falhas = 0;
+    this.sucessos = 0;
   }
   async readFile() {
+    renderScreen();
+    changeSwitch(`${switchRouter ? RouterUrl : RouterUrlBackup}`);
+    this.logs(`Lendo Arquivo ${this.file}`);
     await this.WorkBook.xlsx.read(this.stream);
   }
   async writeFile() {
+    this.logs(`Gerando o Arquivo ${this.outfile}`);
     await this.WorkBook.xlsx.writeFile(this.outfile);
+    this.logs("Gerado com Sucesso!")
+    this.logs(`Ctrl+C ou Ctrl+D para sair.`)
   }
-  async sleep(ms = this.delayTime) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  console(address, cep) {
+    if (address == "Não foi encontrado o endereço") {
+      this.falhas++;
+    } else {
+      this.sucessos++;
+    }
+    changeStatusBar(this.falhas, this.sucessos);
+    changeLineResponse(`Endereço:${address} \nCep:${cep} `);
+    changeSwitch(`${switchRouter ? RouterUrl : RouterUrlBackup}`);
+    return;
+  }
+  logs(value) {
+    addLog(value);
+  }
+
+  async sleep() {
+    return new Promise((resolve) => setTimeout(resolve, this.delayTime));
   }
   getWorkSheet(number = 0) {
     this.worksheet = this.WorkBook.worksheets[number];
@@ -65,41 +88,36 @@ class Planilha {
   getColumn(column = "A1") {
     return this.worksheet.getColumn(column);
   }
-  async main() {
-    await this.readFile();
-    this.getWorkSheet();
-    if (!this.getValueCell("H1")) {
-      this.addValueCell("Endereços", "H1");
-      //await this.writeFile()
-    }
-    const ceps = [];
-    this.getColumn("A").eachCell((cep, rowNumber) => {
-      if (!Number.isInteger(cep.value)) return;
-      ceps.push({ cep: cep.value, row: rowNumber });
-    });
+  async startStreams(data = []) {
+    ///Streams para pega cada cep
     const readableStream = Readable({
       read: function () {
-        ceps.slice(0, 10).forEach((cep) => this.push(JSON.stringify(cep)));
+        // CASO QUERIA LIMITAR PRA 11 LINHAS APENAS
+        data.slice(0, 10).forEach((cep) => this.push(JSON.stringify(cep)));
+        //ceps.forEach((cep) => this.push(JSON.stringify(cep)));
         this.push(null);
       },
     });
-    const writableMapStream = Transform({
+    ///Transform para tratar cada chunk de cep que receber e converter para o endereço.
+    const TransformStream = Transform({
       transform: async (chunk, encoding, cb) => {
         const { cep, row } = JSON.parse(chunk.toString());
+        this.logs(`Processando: ${cep} | Linha: ${row}`);
         var value = "Não foi encontrado o endereço";
-        const data = await RetryRequest(cep);
+        const data = await RetryRequest(cep, switchRouter);
         if (!data.error) {
           value = switchRouter
-            ? this.formaterAddress(data)
-            : this.formaterAddressBackup(data);
+            ? formaterAddress(data)
+            : formaterAddressBackup(data);
         } else {
           switchRouter = !switchRouter;
         }
-        changeConsole(value, cep, switchRouter);
+        this.console(value, cep);
+        if (this.delay) await this.sleep();
         cb(null, JSON.stringify({ cep, row, address: value }));
       },
     });
-
+    ///Writable para escrever a chunk com o endereço na planilha.
     const writableStream = Writable({
       write: (chunk, encoding, cb) => {
         const { cep, row, address } = JSON.parse(chunk.toString());
@@ -108,10 +126,7 @@ class Planilha {
       },
     });
 
-    await pipelineAsync(readableStream, writableMapStream, writableStream);
-    await this.writeFile();
-    ChangeResponse("Concluido!");
-    screen.render();
+    await pipelineAsync(readableStream, TransformStream, writableStream);
   }
 }
 
