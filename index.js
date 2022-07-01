@@ -60,7 +60,7 @@ async function main() {
     ceps.push({ cep: cep.value, row: rowNumber });
   });
 
-  ///um bglh muito loko
+  ///Streams para pega cada cep
   const readableStream = Readable({
     read: function () {
       // CASO QUERIA LIMITAR PRA 11 LINHAS APENAS
@@ -69,8 +69,8 @@ async function main() {
       this.push(null);
     },
   });
-  ///um bglh muito loko
-  const writableMapStream = Transform({
+  ///Transform para tratar cada chunk de cep que receber e converter para o endereço.
+  const TransformStream = Transform({
     transform: async (chunk, encoding, cb) => {
       const { cep, row } = JSON.parse(chunk.toString());
       var value = "Não foi encontrado o endereço";
@@ -86,7 +86,7 @@ async function main() {
       cb(null, JSON.stringify({ cep, row, address: value }));
     },
   });
-  ///um bglh muito loko
+  ///Writable para escrever a chunk com o endereço na planilha.
   const writableStream = Writable({
     write: (chunk, encoding, cb) => {
       const { cep, row, address } = JSON.parse(chunk.toString());
@@ -95,7 +95,7 @@ async function main() {
     },
   });
 
-  await pipelineAsync(readableStream, writableMapStream, writableStream);
+  await pipelineAsync(readableStream, TransformStream, writableStream);
   await planilha.writeFile();
 
   changeLineResponse(

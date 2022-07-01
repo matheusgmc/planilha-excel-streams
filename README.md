@@ -1,6 +1,6 @@
 # Planilha Excel
 
-Projeto para obter ceps de um arquivo `.xlsx` obter o endereço e adicionar em uma nova coluna na planilha.
+Projeto para obter ceps de um arquivo `.xlsx` converter para endereço completo e adicionar em uma nova coluna na planilha.
 
 
 ### Como usar?
