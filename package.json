@@ -4,7 +4,8 @@
   "description": "Automação para processar planilhas grandes com muitas linhas.",
   "main": "index.js",
   "scripts": {
-    "start": "node ."
+    "start": "node .",
+    "dev": "nodemon ."
   },
   "keywords": [],
   "author": "Matheus Geraldo <matheus.geraldo1@outlook.com>",
@@ -12,6 +13,10 @@
   "dependencies": {
     "axios": "^0.27.2",
     "blessed": "^0.1.81",
+    "blessed-contrib": "^4.11.0",
     "exceljs": "^4.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.18"
   }
 }
