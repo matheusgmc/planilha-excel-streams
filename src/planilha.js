@@ -52,8 +52,8 @@ class Planilha {
   async writeFile() {
     this.logs(`Gerando o Arquivo ${this.outfile}`);
     await this.WorkBook.xlsx.writeFile(this.outfile);
-    this.logs("Gerado com Sucesso!")
-    this.logs(`Ctrl+C ou Ctrl+D para sair.`)
+    this.logs("Gerado com Sucesso!");
+    this.logs(`Ctrl+C ou Ctrl+D para sair.`);
   }
   console(address, cep) {
     if (address == "Não foi encontrado o endereço") {
@@ -88,13 +88,17 @@ class Planilha {
   getColumn(column = "A1") {
     return this.worksheet.getColumn(column);
   }
-  async startStreams(data = []) {
+  async startStreams(column) {
     ///Streams para pega cada cep
     const readableStream = Readable({
       read: function () {
         // CASO QUERIA LIMITAR PRA 11 LINHAS APENAS
-        data.slice(0, 10).forEach((cep) => this.push(JSON.stringify(cep)));
-        //ceps.forEach((cep) => this.push(JSON.stringify(cep)));
+        column.eachCell((cep, rowNumber) => {
+          //verifica se o valor é um numero inteiro.
+          if (!Number.isInteger(cep.value)) return;
+          // adiciona na lista
+          this.push(JSON.stringify({ cep: cep.value, row: rowNumber }));
+        });
         this.push(null);
       },
     });

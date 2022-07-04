@@ -19,18 +19,10 @@ async function main() {
     //primeiro paramêtro é o valor que deseja adicionar e o segundo a posição.
     planilha.addValueCell("Endereços", "H1");
   }
-
-  const ceps = [];
   // pega todos os itens da coluna A
-  planilha.getColumn("A").eachCell((cep, rowNumber) => {
-    //verifica se o valor é um numero inteiro.
-    if (!Number.isInteger(cep.value)) return;
-    // adiciona na lista
-    ceps.push({ cep: cep.value, row: rowNumber });
-  });
-
+  const column = planilha.getColumn("A");
   //iniciar o processo de escrita
-  await planilha.startStreams(ceps);
+  await planilha.startStreams(column);
 
   // gerando o arquivo final
   await planilha.writeFile();
