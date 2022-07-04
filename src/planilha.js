@@ -31,7 +31,7 @@ class Planilha {
     pathfileOut = "resultados.xlsx",
     delay = false,
     delayTime = 1000,
-    renderActive = false,
+    writeCountFile = 1000
   }) {
     this.file = pathfileIn;
     this.outfile = pathfileOut;
@@ -42,6 +42,8 @@ class Planilha {
     this.delayTime = delayTime;
     this.falhas = 0;
     this.sucessos = 0;
+    this.readcount = 0;
+    this.writeCountFile = writeCountFile;
   }
   async readFile() {
     renderScreen();
@@ -50,10 +52,9 @@ class Planilha {
     await this.WorkBook.xlsx.read(this.stream);
   }
   async writeFile() {
-    this.logs(`Gerando o Arquivo ${this.outfile}`);
-    await this.WorkBook.xlsx.writeFile(this.outfile);
-    this.logs("Gerado com Sucesso!");
-    this.logs(`Ctrl+C ou Ctrl+D para sair.`);
+    this.logs(`Escrevendo no Arquivo ${this.file}`);
+    await this.WorkBook.xlsx.writeFile(this.outfile, { stream: this.stream });
+    this.logs("Escrita feita com Sucesso!");
   }
   console(address, cep) {
     if (address == "Não foi encontrado o endereço") {
@@ -123,14 +124,21 @@ class Planilha {
     });
     ///Writable para escrever a chunk com o endereço na planilha.
     const writableStream = Writable({
-      write: (chunk, encoding, cb) => {
-        const { cep, row, address } = JSON.parse(chunk.toString());
+      write: async (chunk, encoding, cb) => {
+        const { row, address } = JSON.parse(chunk.toString());
         this.addValueCell(address, `H${row}`);
+        if (this.readcount >= this.writeCountFile) {
+          await this.writeFile();
+          this.readcount = 0;
+        } else {
+          this.readcount++;
+        }
         cb();
       },
     });
 
     await pipelineAsync(readableStream, TransformStream, writableStream);
+    this.logs(`Ctrl+C ou Ctrl+D para sair.`);
   }
 }
 
